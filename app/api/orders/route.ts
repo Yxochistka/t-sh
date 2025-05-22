@@ -1,45 +1,34 @@
-// app/orders/route.ts
-import { prisma } from '../../lib/db'
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "../../lib/db";
 
 export async function GET() {
   try {
-    const orders = await prisma.order.findMany({
-      include: {
-        car: true,
-        orderServices: {
-          include: { service: true },
-        },
-      },
-    })
-    return NextResponse.json(orders)
+    const orders = await prisma.order.findMany();
+    return NextResponse.json(orders);
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to fetch orders' }, { status: 500 })
+    return NextResponse.json({ error: "Failed to fetch orders" }, { status: 500 });
   }
 }
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
-    const body = await req.json()
+    const { carId, orderTime, totalPrice, status } = await req.json();
+
+    if (!carId || !orderTime || !totalPrice || !status) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    }
+
     const newOrder = await prisma.order.create({
       data: {
-        carId: body.carId,
-        orderTime: new Date(body.orderTime),
-        totalPrice: body.totalPrice,
-        status: body.status,
-        orderServices: {
-          create: body.serviceIds.map((serviceId: number) => ({
-            service: { connect: { id: serviceId } },
-          })),
-        },
+        carId,
+        orderDate: new Date(orderTime), // assuming orderTime is a valid date string
+        total: totalPrice,
+        status,
       },
-      include: {
-        orderServices: true,
-      },
-    })
+    });
 
-    return NextResponse.json(newOrder)
+    return NextResponse.json(newOrder, { status: 201 });
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to create order' }, { status: 500 })
+    return NextResponse.json({ error: "Failed to create order" }, { status: 500 });
   }
 }

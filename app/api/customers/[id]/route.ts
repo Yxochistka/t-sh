@@ -1,54 +1,57 @@
-// app/customers/[id]/route.ts
-import { prisma } from '../../../lib/db'
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "../../../lib/db";
 
 export async function GET(
-  req: Request,
+  req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const customer = await prisma.customer.findUnique({
-      where: { id: Number(params.id) },
-    })
+    const id = Number(params.id);
+    const customer = await prisma.customer.findUnique({ where: { id } });
 
     if (!customer) {
-      return NextResponse.json({ error: 'Customer not found' }, { status: 404 })
+      return NextResponse.json({ error: "Customer not found" }, { status: 404 });
     }
 
-    return NextResponse.json(customer)
+    return NextResponse.json(customer);
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to fetch customer' }, { status: 500 })
+    return NextResponse.json({ error: "Failed to fetch customer" }, { status: 500 });
   }
 }
 
 export async function PUT(
-  req: Request,
+  req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const body = await req.json()
-    const updatedCustomer = await prisma.customer.update({
-      where: { id: Number(params.id) },
-      data: body,
-    })
+    const id = Number(params.id);
+    const { name, phone, email } = await req.json();
 
-    return NextResponse.json(updatedCustomer)
+    const updatedCustomer = await prisma.customer.update({
+      where: { id },
+      data: {
+        name,
+        phone,
+        email,
+      },
+    });
+
+    return NextResponse.json(updatedCustomer);
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to update customer' }, { status: 500 })
+    return NextResponse.json({ error: "Failed to update customer" }, { status: 500 });
   }
 }
 
 export async function DELETE(
-  req: Request,
+  req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    await prisma.customer.delete({
-      where: { id: Number(params.id) },
-    })
+    const id = Number(params.id);
+    await prisma.customer.delete({ where: { id } });
 
-    return NextResponse.json({ message: 'Customer deleted successfully' })
+    return NextResponse.json({ message: "Customer deleted successfully" });
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to delete customer' }, { status: 500 })
+    return NextResponse.json({ error: "Failed to delete customer" }, { status: 500 });
   }
 }

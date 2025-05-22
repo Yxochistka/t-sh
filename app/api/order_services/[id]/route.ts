@@ -1,62 +1,56 @@
-// app/order_services/[id]/route.ts
-import { prisma } from '../../../lib/db'
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "../../../lib/db";
 
 export async function GET(
-  req: Request,
+  req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const orderService = await prisma.orderService.findUnique({
-      where: { id: Number(params.id) },
-      include: {
-        order: true,
-        service: true,
-      },
-    })
+    const id = Number(params.id);
+    const orderService = await prisma.order_Service.findUnique({ where: { id } });
 
     if (!orderService) {
-      return NextResponse.json({ error: 'Order-service not found' }, { status: 404 })
+      return NextResponse.json({ error: "Order_Service not found" }, { status: 404 });
     }
 
-    return NextResponse.json(orderService)
+    return NextResponse.json(orderService);
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to fetch order-service' }, { status: 500 })
+    return NextResponse.json({ error: "Failed to fetch order_service" }, { status: 500 });
   }
 }
 
 export async function PUT(
-  req: Request,
+  req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const body = await req.json()
+    const id = Number(params.id);
+    const { orderId, serviceId } = await req.json();
 
-    const updatedOrderService = await prisma.orderService.update({
-      where: { id: Number(params.id) },
+    const updatedOrderService = await prisma.order_Service.update({
+      where: { id },
       data: {
-        orderId: body.orderId,
-        serviceId: body.serviceId,
+        orderId,
+        serviceId,
       },
-    })
+    });
 
-    return NextResponse.json(updatedOrderService)
+    return NextResponse.json(updatedOrderService);
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to update order-service' }, { status: 500 })
+    return NextResponse.json({ error: "Failed to update order_service" }, { status: 500 });
   }
 }
 
 export async function DELETE(
-  req: Request,
+  req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    await prisma.orderService.delete({
-      where: { id: Number(params.id) },
-    })
+    const id = Number(params.id);
+    await prisma.order_Service.delete({ where: { id } });
 
-    return NextResponse.json({ message: 'Order-service deleted successfully' })
+    return NextResponse.json({ message: "Order_Service deleted successfully" });
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to delete order-service' }, { status: 500 })
+    return NextResponse.json({ error: "Failed to delete order_service" }, { status: 500 });
   }
 }

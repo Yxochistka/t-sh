@@ -1,22 +1,33 @@
-// app/customers/route.ts
-import { prisma } from '../../lib/db'
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "../../lib/db";
 
 export async function GET() {
   try {
-    const customers = await prisma.customer.findMany()
-    return NextResponse.json(customers)
+    const customers = await prisma.customer.findMany();
+    return NextResponse.json(customers);
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to fetch customers' }, { status: 500 })
+    return NextResponse.json({ error: "Failed to fetch customers" }, { status: 500 });
   }
 }
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
-    const body = await req.json()
-    const newCustomer = await prisma.customer.create({ data: body })
-    return NextResponse.json(newCustomer)
+    const { name, phone, email } = await req.json();
+
+    if (!name || !phone || !email) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    }
+
+    const newCustomer = await prisma.customer.create({
+      data: {
+        name,
+        phone,
+        email,
+      },
+    });
+
+    return NextResponse.json(newCustomer, { status: 201 });
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to create customer' }, { status: 500 })
+    return NextResponse.json({ error: "Failed to create customer" }, { status: 500 });
   }
 }

@@ -1,34 +1,32 @@
-// app/order_services/route.ts
-import { prisma } from '../../lib/db'
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "../../lib/db";
 
 export async function GET() {
   try {
-    const orderServices = await prisma.orderService.findMany({
-      include: {
-        order: true,
-        service: true,
-      },
-    })
-    return NextResponse.json(orderServices)
+    const orderServices = await prisma.order_Service.findMany();
+    return NextResponse.json(orderServices);
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to fetch order-services' }, { status: 500 })
+    return NextResponse.json({ error: "Failed to fetch order_services" }, { status: 500 });
   }
 }
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
-    const body = await req.json()
+    const { orderId, serviceId } = await req.json();
 
-    const newOrderService = await prisma.orderService.create({
+    if (!orderId || !serviceId) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    }
+
+    const newOrderService = await prisma.order_Service.create({
       data: {
-        orderId: body.orderId,
-        serviceId: body.serviceId,
+        orderId,
+        serviceId,
       },
-    })
+    });
 
-    return NextResponse.json(newOrderService)
+    return NextResponse.json(newOrderService, { status: 201 });
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to create order-service' }, { status: 500 })
+    return NextResponse.json({ error: "Failed to create order_service" }, { status: 500 });
   }
 }
